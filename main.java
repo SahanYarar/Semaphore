@@ -23,8 +23,8 @@ public class Main {
 }
 
 class ReadWriteLock {
-    private final Semaphore readerSemaphore = new Semaphore(1);
-    private final Semaphore writerSemaphore = new Semaphore(1);
+    private Semaphore readerSemaphore = new Semaphore(1);
+    private Semaphore writerSemaphore = new Semaphore(1);
     private int readers = 0;
 
     public void readLock() {
@@ -79,7 +79,7 @@ class ReadWriteLock {
 }
 
 class Writer implements Runnable {
-    private final ReadWriteLock RW_lock;
+    private ReadWriteLock RW_lock;
     private volatile boolean running = true;
 
     public Writer(ReadWriteLock rw) {
@@ -116,7 +116,7 @@ class Writer implements Runnable {
 }
 
 class Reader implements Runnable {
-    private final ReadWriteLock RW_lock;
+    private ReadWriteLock RW_lock;
     private volatile boolean running = true;
 
     public Reader(ReadWriteLock rw) {
