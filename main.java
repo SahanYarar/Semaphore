@@ -2,6 +2,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+// reader-priority this means if someone is reading lock the writer
 public class Main {
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newCachedThreadPool();
@@ -22,13 +23,13 @@ public class Main {
 }
 
 class ReadWriteLock {
-    private final Semaphore S = new Semaphore(1);
-    private final Semaphore sd = new Semaphore(1);
+    private final Semaphore readerSemaphore = new Semaphore(1);
+    private final Semaphore writerSemaphore = new Semaphore(1);
     private int numberOfReaders = 0;
 
     public void readLock() {
         try {
-            S.acquire();
+            readerSemaphore.acquire();
         } catch (InterruptedException e) {
             System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
@@ -36,64 +37,68 @@ class ReadWriteLock {
         numberOfReaders++;
         if (numberOfReaders == 1) {
             try {
-                sd.acquire();
+                writerSemaphore.acquire();
             } catch (InterruptedException e) {
                 System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
         }
-        System.out.println("Reader is reading. Number of Readers = " + numberOfReaders);
-        S.release();
+        System.out.println("Reader reading. Total Readers = " + numberOfReaders);
+        readerSemaphore.release();
     }
 
     public void writeLock() {
         try {
-            sd.acquire();
+            writerSemaphore.acquire();
         } catch (InterruptedException e) {
             System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
-        System.out.println("Writer is now writing");
+        System.out.println("Writer started writing");
     }
 
     public void readUnLock() {
         try {
-            S.acquire();
+            readerSemaphore.acquire();
         } catch (InterruptedException e) {
             System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
         numberOfReaders--;
-        System.out.println("Reader finished reading. Number of Readers = " + numberOfReaders);
+        System.out.println("Reader readed . Total Readers = " + numberOfReaders);
         if (numberOfReaders == 0) {
-            sd.release();
+            writerSemaphore.release();
         }
-        S.release();
+        readerSemaphore.release();
     }
 
     public void writeUnLock() {
-        System.out.println("Writer finished writing");
-        sd.release();
+        System.out.println("Writer finished");
+        writerSemaphore.release();
     }
 }
 
- class Writer implements Runnable {
+class Writer implements Runnable {
     private final ReadWriteLock RW_lock;
+    private volatile boolean running = true;
 
     public Writer(ReadWriteLock rw) {
         RW_lock = rw;
     }
 
     public void run() {
-        while (true) {
+        while (running) {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
                 System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
-
             }
-            System.out.println("A writer asks permission to write");
+
+            if (!running) {
+                break;
+            }
+            System.out.println("Writer requesting permission");
             RW_lock.writeLock();
             try {
                 Thread.sleep(1500);
@@ -104,25 +109,35 @@ class ReadWriteLock {
             RW_lock.writeUnLock();
         }
     }
+
+    public void stop() {
+        running = false;
+    }
 }
 
 class Reader implements Runnable {
     private final ReadWriteLock RW_lock;
+    private volatile boolean running = true;
 
     public Reader(ReadWriteLock rw) {
         RW_lock = rw;
     }
 
     public void run() {
-        while (true) {
+        while (running) {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
                 System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
-            System.out.println("A reader asks permission to read");
+             if (!running) {
+                break;
+            }
+
+            System.out.println("Reader asks permission");
             RW_lock.readLock();
+
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
@@ -131,6 +146,9 @@ class Reader implements Runnable {
             }
             RW_lock.readUnLock();
         }
+    }
+    public void stop() {
+        running = false;
     }
 }
 
