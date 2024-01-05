@@ -1,6 +1,6 @@
-// Main.java
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,10 +21,7 @@ public class Main {
     }
 }
 
-// ReadWriteLock.java
-import java.util.concurrent.Semaphore;
-
-public class ReadWriteLock {
+class ReadWriteLock {
     private final Semaphore S = new Semaphore(1);
     private final Semaphore sd = new Semaphore(1);
     private int numberOfReaders = 0;
@@ -33,6 +30,7 @@ public class ReadWriteLock {
         try {
             S.acquire();
         } catch (InterruptedException e) {
+            System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
         numberOfReaders++;
@@ -40,6 +38,7 @@ public class ReadWriteLock {
             try {
                 sd.acquire();
             } catch (InterruptedException e) {
+                System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
         }
@@ -51,6 +50,7 @@ public class ReadWriteLock {
         try {
             sd.acquire();
         } catch (InterruptedException e) {
+            System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
         System.out.println("Writer is now writing");
@@ -60,6 +60,7 @@ public class ReadWriteLock {
         try {
             S.acquire();
         } catch (InterruptedException e) {
+            System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
         numberOfReaders--;
@@ -76,8 +77,7 @@ public class ReadWriteLock {
     }
 }
 
-// Writer.java
-public class Writer implements Runnable {
+ class Writer implements Runnable {
     private final ReadWriteLock RW_lock;
 
     public Writer(ReadWriteLock rw) {
@@ -89,13 +89,16 @@ public class Writer implements Runnable {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
+                System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
+
             }
             System.out.println("A writer asks permission to write");
             RW_lock.writeLock();
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
+                System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
             RW_lock.writeUnLock();
@@ -103,8 +106,7 @@ public class Writer implements Runnable {
     }
 }
 
-// Reader.java
-public class Reader implements Runnable {
+class Reader implements Runnable {
     private final ReadWriteLock RW_lock;
 
     public Reader(ReadWriteLock rw) {
@@ -116,6 +118,7 @@ public class Reader implements Runnable {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
+                System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
             System.out.println("A reader asks permission to read");
@@ -123,6 +126,7 @@ public class Reader implements Runnable {
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
+                System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
             }
             RW_lock.readUnLock();
