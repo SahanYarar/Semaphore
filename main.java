@@ -25,7 +25,7 @@ public class Main {
 class ReadWriteLock {
     private final Semaphore readerSemaphore = new Semaphore(1);
     private final Semaphore writerSemaphore = new Semaphore(1);
-    private int numberOfReaders = 0;
+    private int readers = 0;
 
     public void readLock() {
         try {
@@ -34,8 +34,8 @@ class ReadWriteLock {
             System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
-        numberOfReaders++;
-        if (numberOfReaders == 1) {
+        readers++;
+        if (readers == 1) {
             try {
                 writerSemaphore.acquire();
             } catch (InterruptedException e) {
@@ -43,7 +43,7 @@ class ReadWriteLock {
                 Thread.currentThread().interrupt();
             }
         }
-        System.out.println("Reader reading. Total Readers = " + numberOfReaders);
+        System.out.println("Reader reading. Total Readers = " + readers);
         readerSemaphore.release();
     }
 
@@ -64,9 +64,9 @@ class ReadWriteLock {
             System.out.println("interrupt occurred");
             Thread.currentThread().interrupt();
         }
-        numberOfReaders--;
-        System.out.println("Reader readed . Total Readers = " + numberOfReaders);
-        if (numberOfReaders == 0) {
+        readers--;
+        System.out.println("Reader readed . Total Readers = " + readers);
+        if (readers == 0) {
             writerSemaphore.release();
         }
         readerSemaphore.release();
