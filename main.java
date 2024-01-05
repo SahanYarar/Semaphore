@@ -89,7 +89,7 @@ class Writer implements Runnable {
     public void run() {
         while (running) {
             try {
-                Thread.sleep(1500);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
@@ -101,7 +101,7 @@ class Writer implements Runnable {
             System.out.println("Writer requesting permission");
             RW_lock.writeLock();
             try {
-                Thread.sleep(1500);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 System.out.println("interrupt occurred");
                 Thread.currentThread().interrupt();
